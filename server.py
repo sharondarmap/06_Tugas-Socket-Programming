@@ -1,43 +1,34 @@
 import socket
-import threading
-import queue
 
-messages = queue.Queue()
-clients = []
+SERVER_IP = "0.0.0.0"  # Menerima koneksi dari semua IP
+SERVER_PORT = 12345
+BUFFER_SIZE = 1024
 
-server = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-server.bind(("localhost", 9999))
-    
-def receive():
+clients = {}  # Menyimpan alamat client dan username-nya
+
+def start_server():
+    # Membuat socket UDP
+    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    server_socket.bind((SERVER_IP, SERVER_PORT))
+    print(f"Server running on {SERVER_IP}:{SERVER_PORT}")
+
     while True:
-        try:
-            message, addr = server.recvfrom(1024)
-            messages.put((message, addr))
-        except:
-            pass
-        
-def broadcast():
-    while True:
-        while not messages.empty():
-            message, addr = messages.get()  # Get the message and address
-            print(message.decode())  # Decode the message to print it
-            
-            if addr not in clients:
-                clients.append(addr)
-            
-            for client in clients:
-                try:
-                    if message.decode().startswith("SIGNUP_TAG:"):
-                        name = message.decode().split(":")[1]
-                        server.sendto(f"{name} joined".encode(), client)
-                    else:
-                        server.sendto(message, client)
-                except:
-                    clients.remove(client)
+        # Menerima pesan dari client
+        message, client_address = server_socket.recvfrom(BUFFER_SIZE)
+        decoded_message = message.decode()
+        print(f"Received from {client_address}: {decoded_message}")
 
-                    
-t1 = threading.Thread(target=receive)
-t2 = threading.Thread(target= broadcast)
+        # Parsing username dan pesan
+        if decoded_message.startswith("JOIN:"):
+            username = decoded_message.split(":")[1]
+            clients[client_address] = username
+            print(f"{username} joined the chat")
+            continue
 
-t1.start()
-t2.start()
+        # Meneruskan pesan ke semua client kecuali pengirim
+        for addr, user in clients.items():
+            if addr != client_address:
+                server_socket.sendto(message, addr)
+
+if __name__ == "__main__":
+    start_server()
