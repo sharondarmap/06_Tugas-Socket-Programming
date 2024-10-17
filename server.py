@@ -1,34 +1,41 @@
 import socket
 
-SERVER_IP = "0.0.0.0"  # Menerima koneksi dari semua IP
-SERVER_PORT = 12345
-BUFFER_SIZE = 1024
+# Konfigurasi server
+IP = "0.0.0.0"  # Menerima koneksi dari semua interface
+PORT = int(input("Masukkan port untuk server: "))
+PASSWORD = input("Masukkan password untuk chatroom: ")
 
-clients = {}  # Menyimpan alamat client dan username-nya
+# Inisialisasi socket UDP
+server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+server_socket.bind((IP, PORT))
 
-def start_server():
-    # Membuat socket UDP
-    server_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    server_socket.bind((SERVER_IP, SERVER_PORT))
-    print(f"Server running on {SERVER_IP}:{SERVER_PORT}")
+print(f"Server berjalan di {IP}:{PORT}")
 
-    while True:
-        # Menerima pesan dari client
-        message, client_address = server_socket.recvfrom(BUFFER_SIZE)
-        decoded_message = message.decode()
-        print(f"Received from {client_address}: {decoded_message}")
+clients = {}  # {alamat: username}
 
-        # Parsing username dan pesan
-        if decoded_message.startswith("JOIN:"):
-            username = decoded_message.split(":")[1]
-            clients[client_address] = username
-            print(f"{username} joined the chat")
-            continue
+def broadcast(message, source_addr):
+    """Meneruskan pesan ke semua client kecuali pengirim."""
+    for addr in clients:
+        if addr != source_addr:
+            server_socket.sendto(message.encode(), addr)
 
-        # Meneruskan pesan ke semua client kecuali pengirim
-        for addr, user in clients.items():
-            if addr != client_address:
-                server_socket.sendto(message, addr)
+while True:
+    data, addr = server_socket.recvfrom(1024)
+    msg = data.decode()
 
-if __name__ == "__main__":
-    start_server()
+    if addr not in clients:
+        # Memproses pesan registrasi
+        username, password = msg.split(":", 1)
+        if password != PASSWORD:
+            server_socket.sendto("Password salah.".encode(), addr)
+        elif username in clients.values():
+            server_socket.sendto("Username sudah digunakan.".encode(), addr)
+        else:
+            clients[addr] = username
+            server_socket.sendto("Terhubung ke chatroom!".encode(), addr)
+            print(f"{username} bergabung dari {addr}")
+    else:
+        # Menerima dan meneruskan pesan ke client lain
+        username = clients[addr]
+        print(f"[{username}] {msg}")
+        broadcast(f"[{username}] {msg}", addr)
