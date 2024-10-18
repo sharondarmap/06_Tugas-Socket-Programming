@@ -1,28 +1,48 @@
 import socket
 import threading
-import random
 
-client = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-client.bind(("localhost", random.randint(8000, 9000)))
-
-name = input("Nama: ")
-
-def receive():
+def receive_messages(sock):
+    """Menerima pesan dari server dan mencetaknya."""
     while True:
         try:
-            message, _ = client.recvfrom(1024)
-            print(message.decode())
+            data, _ = sock.recvfrom(1024)
+            print(data.decode())
         except:
-            pass
-        
-t = threading.Thread(target=receive)
-t.start()
+            print("Koneksi terputus.")
+            break
 
-client.sendto(f"SIGNUP_TAG:{name}".encode(), ("localhost",9999))
+# Konfigurasi koneksi
+server_ip = input("Masukkan IP server: ")
+server_port = int(input("Masukkan port server: "))
+username = input("Masukkan username: ")
+password = input("Masukkan password: ")
 
-while True:
-    message = input("")
-    if message == "!q":
-        exit()
-    else:
-        client.sendto(f"{name}: {message}".encode(), ("localhost", 9999))
+# Inisialisasi socket UDP
+client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+# Kirim username dan password ke server
+client_socket.sendto(f"{username}:{password}".encode(), (server_ip, server_port))
+
+# Menerima respons dari server
+response, _ = client_socket.recvfrom(1024)
+print(response.decode())
+
+# Jika password salah atau username tidak valid, keluar
+if response.decode() != "Terhubung ke chatroom!":
+    client_socket.close()
+    exit()
+
+# Jalankan thread untuk menerima pesan
+thread = threading.Thread(target=receive_messages, args=(client_socket,))
+thread.daemon = True
+thread.start()
+
+# Kirim pesan ke server
+try:
+    while True:
+        message = input()
+        client_socket.sendto(message.encode(), (server_ip, server_port))
+except KeyboardInterrupt:
+    print("Keluar dari chat.")
+finally:
+    client_socket.close()
