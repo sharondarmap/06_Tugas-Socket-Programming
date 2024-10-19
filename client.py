@@ -8,29 +8,32 @@ def receive_messages(sock):
             data, _ = sock.recvfrom(1024)
             print(data.decode())
         except:
-            print("Koneksi terputus.")
+            print("Maaf koneksi telah terputus ૮(˶ㅠ︿ㅠ)ა")
             break
 
 # Konfigurasi koneksi
-server_ip = input("Masukkan IP server: ")
-server_port = int(input("Masukkan port server: "))
-username = input("Masukkan username: ")
-password = input("Masukkan password: ")
+server_ip = input("Masukkan IP Server : ")
+server_port = int(input("Masukkan Port Server : "))
 
 # Inisialisasi socket UDP
 client_socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
 
-# Kirim username dan password ke server
-client_socket.sendto(f"{username}:{password}".encode(), (server_ip, server_port))
+# Proses login
+while True:
+    username = input("Masukkan Username : ")
+    password = input("Masukkan Password : ")
 
-# Menerima respons dari server
-response, _ = client_socket.recvfrom(1024)
-print(response.decode())
+    # Kirim username dan password ke server
+    client_socket.sendto(f"{username}:{password}".encode(), (server_ip, server_port))
 
-# Jika password salah atau username tidak valid, keluar
-if response.decode() != "Terhubung ke chatroom!":
-    client_socket.close()
-    exit()
+    # Menerima respons dari server
+    response, _ = client_socket.recvfrom(1024)
+    response_msg = response.decode()
+    print(response_msg)
+
+    # Jika terhubung ke chatroom, keluar dari loop
+    if response_msg == "Selamat Anda telah terhubung ke chatroom!( ˶ˆᗜˆ˵ )":
+        break
 
 # Jalankan thread untuk menerima pesan
 thread = threading.Thread(target=receive_messages, args=(client_socket,))
