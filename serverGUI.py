@@ -74,7 +74,7 @@ frame.pack(expand=True)
 
 tk.Label(frame, text="┏━━✦❘༻Selamat Datang༺❘✦━━┓", font=("Adobe Garamond Pro Bold", 15, "bold"), bg='#404040', fg='white').grid(row=0, columnspan=2)
 tk.Label(frame, text="Di", font=("Adobe Garamond Pro Bold", 10, "bold"), bg='#404040', fg='white').grid(row=1, columnspan=2)
-tk.Label(frame, text="ˏˋ°•*⁀➷SERVER PAGE ༊*·˚", font=("Adobe Garamond Pro Bold", 20, "bold"), bg='#404040', fg='white').grid(row=2, columnspan=2, pady=30)
+tk.Label(frame, text="ˏˋ°•*⁀➷SERVER PAGE ༊*·˚", font=("Adobe Garamond Pro Bold", 20, "bold"), bg='#404040', fg='white').grid(row=2, columnspan=2, pady=(0,20))
 tk.Label(frame, text="Port:", bg='#404040', fg='white').grid(row=3, column=0)
 port_entry = tk.Entry(frame, bg='#b8b8b8', fg='black')
 port_entry.grid(row=3, column=1)
