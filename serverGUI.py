@@ -27,7 +27,9 @@ def run_server(port, password):
 def handle_new_client(msg, addr, password):
     try:
         username, client_password = msg.split(":", 1)
-        if client_password != password:
+        if (client_password != password) and (username in clients.values()):
+            server_socket.sendto("Password dan Username salah, ayo coba lagi!!!(ง'̀-'́)ง".encode(), addr)            
+        elif client_password != password:
             server_socket.sendto("Password salah, ayo coba lagi!!!(ง'̀-'́)ง".encode(), addr)
         elif username in clients.values():
             server_socket.sendto("Username telah digunakan, ayo coba lagi!!!(ง'̀-'́)ง".encode(), addr)
@@ -70,9 +72,9 @@ window.configure(bg='#404040')
 frame = tk.Frame(window, bg='#404040')
 frame.pack(expand=True)
 
-tk.Label(frame, text="────────୨ Selamat Datang ৎ────────", font=("Adobe Garamond Pro Bold", 15, "bold"), bg='#404040', fg='white').grid(row=0, columnspan=2)
+tk.Label(frame, text="┏━━✦❘༻Selamat Datang༺❘✦━━┓", font=("Adobe Garamond Pro Bold", 15, "bold"), bg='#404040', fg='white').grid(row=0, columnspan=2)
 tk.Label(frame, text="Di", font=("Adobe Garamond Pro Bold", 10, "bold"), bg='#404040', fg='white').grid(row=1, columnspan=2)
-tk.Label(frame, text="ꕤ⭒๋࣭ ⭑SERVER PAGE ⋆˚✿˖°", font=("Adobe Garamond Pro Bold", 20, "bold"), bg='#404040', fg='white').grid(row=2, columnspan=2, pady=30)
+tk.Label(frame, text="ˏˋ°•*⁀➷SERVER PAGE ༊*·˚", font=("Adobe Garamond Pro Bold", 20, "bold"), bg='#404040', fg='white').grid(row=2, columnspan=2, pady=30)
 tk.Label(frame, text="Port:", bg='#404040', fg='white').grid(row=3, column=0)
 port_entry = tk.Entry(frame, bg='#b8b8b8', fg='black')
 port_entry.grid(row=3, column=1)
